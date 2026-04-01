@@ -268,7 +268,7 @@ namespace CloverPos
 
             return 1;
         }
-
+        // @"(?<Result>\d+\s*ML|\d+\s*LTR|\d+\s*L|\d+\s*OZ)"
         public string getVolume(string prodName)
         {
             if (string.IsNullOrEmpty(prodName))
@@ -278,7 +278,7 @@ namespace CloverPos
 
             var regexMatch = Regex.Match(
                 prodName,
-                @"(?<Result>\d+\s*ML|\d+\s*LTR|\d+\s*L|\d+\s*OZ)",
+                @"(?<Result>\d+(\.\d+)?\s*(ML|LTR|L|OZ))",
                 RegexOptions.IgnoreCase
             );
 
