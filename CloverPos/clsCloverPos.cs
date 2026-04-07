@@ -209,6 +209,7 @@ namespace CloverPos
             request.AddHeader("Authorization", "Bearer " + accessToken);
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             IRestResponse response = client.Execute(request);
+           // File.AppendAllText($"{StoreId}categories.json", response.Content); //comment later
             try
             {
                 if (!(response.StatusCode.ToString().ToUpper() == "UNAUTHORIZED"))
@@ -337,7 +338,10 @@ namespace CloverPos
                 request.AddHeader("Authorization", "Bearer " + tokenid);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 IRestResponse response = client.Execute(request);
-                //File.AppendAllText($"{storeid_tax_rates}.json", response.Content);
+
+             //   File.AppendAllText($"{storeid}tax_rates.json", response.Content); //comment later
+
+
                 string content = response.Content;
                 Tax tax = Load<Tax>(content);
                 int ElementTaxValue = (from t in tax.elements
@@ -379,7 +383,7 @@ namespace CloverPos
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         IRestResponse response1 = client1.Execute(request1);
                         string content2 = response1.Content;
-                        // File.AppendAllText($"{storeid_items}.json", content2);
+                 //    File.AppendAllText($"{storeid}_items.json", content2); //comment later 
                         if (response1.StatusCode.ToString().ToUpper() != "OK")
                         {
                             if (!exception.Contains(storeid.ToString()))
@@ -515,39 +519,41 @@ namespace CloverPos
                             {
                                 exportProducts.upc = "#" + element.code.ToString();
                             }
-                            if (upcskucodeidnull.Contains(storeid.ToString()))
-                            {
-                                exportProducts.upc = "";
-                                exportProducts.sku = "";
-                                element.code = ((element.code == null) ? "" : element.code);
-                                element.sku = ((element.sku == null) ? "" : element.sku);
-                                exportProducts.upc = "#" + element.code.ToString();
-                                exportProducts.sku = "#" + element.sku;
-                                if (exportProducts.upc.Length <= 1)
+                            
+                                if (upcskucodeidnull.Contains(storeid.ToString()))
                                 {
-                                    if (exportProducts.sku.Length <= 1)
-                                    {
-                                        exportProducts.upc = "#" + element.id;
-                                        exportProducts.sku = "#" + element.id;
-                                    }
-                                    else
-                                    {
-                                        exportProducts.upc = exportProducts.sku;
-                                    }
-                                }
-                                if (exportProducts.sku.Length <=1)
-                                {
+                                    exportProducts.upc = "";
+                                    exportProducts.sku = "";
+                                    element.code = ((element.code == null) ? "" : element.code);
+                                    element.sku = ((element.sku == null) ? "" : element.sku);
+                                    exportProducts.upc = "#" + element.code.ToString();
+                                    exportProducts.sku = "#" + element.sku;
                                     if (exportProducts.upc.Length <= 1)
                                     {
-                                        exportProducts.upc = "#" + element.id;
-                                        exportProducts.sku = "#" + element.id;
+                                        if (exportProducts.sku.Length <= 1)
+                                        {
+                                            exportProducts.upc = "#" + element.id;
+                                            exportProducts.sku = "#" + element.id;
+                                        }
+                                        else
+                                        {
+                                            exportProducts.upc = exportProducts.sku;
+                                        }
                                     }
-                                    else
+                                    if (exportProducts.sku.Length <= 1)
                                     {
-                                        exportProducts.sku = exportProducts.upc;
+                                        if (exportProducts.upc.Length <= 1)
+                                        {
+                                            exportProducts.upc = "#" + element.id;
+                                            exportProducts.sku = "#" + element.id;
+                                        }
+                                        else
+                                        {
+                                            exportProducts.sku = exportProducts.upc;
+                                        }
                                     }
                                 }
-                            }
+                           
                             if (upcasskuandcode.Contains(storeid.ToString()))
                             {
                                 element.code = ((element.code == null) ? "" : element.code);
