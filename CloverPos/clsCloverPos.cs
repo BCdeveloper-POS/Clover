@@ -45,7 +45,7 @@ namespace CloverPos
         {
             Console.WriteLine("Generating Product File of Clover " + StoreId);
             string[] array = Clover_RefreshToken(ClientId, refreshtoken, StoreId, 0, 0);
-            string value = CloverSettings(StoreId, MerchantId, ClientId, array[0], Code, InStock, Category);
+            string value = CloverSettings(StoreId, MerchantId, ClientId, array[0], Code, InStock, Category, array[1]??"");
             if (!string.IsNullOrEmpty(value))
             {
                 Console.WriteLine("Product File Generated for Clover " + StoreId);
@@ -131,7 +131,7 @@ namespace CloverPos
             return token_info;
 
         }
-        public string CloverSettings(int StoreId, string MerchantId, string ClientId, string TokenId, string Code, string InStock, List<categories> Category)
+        public string CloverSettings(int StoreId, string MerchantId, string ClientId, string TokenId, string Code, string InStock, List<categories> Category, string RefreshToken = "")
         {
             clsBOCloverStoreSettings cloverposserttings = new clsBOCloverStoreSettings();
             categories categories = new categories();
@@ -186,11 +186,11 @@ namespace CloverPos
                 }
                 JsonSerializer serializer = new JsonSerializer();
                 string cloversettings = JsonConvert.SerializeObject(cloverposserttings);
-                return GenerateCSVFiles(StoreId.ToString(), cloverposserttings);
+                return GenerateCSVFiles(StoreId.ToString(), cloverposserttings, RefreshToken);
             }
             return "";
         }
-
+        
         public string getCategories(string merchant_id, string accessToken, int StoreId)
         {
             //Thread.Sleep(1000);
@@ -324,7 +324,7 @@ namespace CloverPos
         //    catch (Exception ex)
         //    { }
         //}
-        public string GenerateCSVFiles(string storeid, clsBOCloverStoreSettings settings)
+        public string GenerateCSVFiles(string storeid, clsBOCloverStoreSettings settings, string RefreshToken)
         {
             try
             {
@@ -859,13 +859,41 @@ namespace CloverPos
                 CreateCSVFromGenericList(FinalProdList, text5, storeid);
                 string text6 = ConfigurationManager.AppSettings["BaseDirectory"] + "\\" + storeid + "\\Upload\\FULLNAME" + storeid + DateTime.UtcNow.ToString("yyyymmddHHmmss") + ".csv";
                 CreateCSVFromGenericList(FinalFullNamelist, text6, storeid);
-                
+                sendTokenToSyncgo(settings.clientid, RefreshToken, storeid);
                 return text5;
             }
             catch (Exception ex3)
             {
                 //new clsEmail().sendEmail(DeveloperId, "", "", "Error in " + storeid + " CloverPos@" + DateTime.UtcNow.ToString() + " GMT", "StatusCode:ERROR Response3<br/>" + ex3.Message + "<br/>" + ex3.StackTrace);
                 return ex3.Message.ToString();
+            }
+        }
+        private void sendTokenToSyncgo(string clientid, string refresh_token, string StoreId)
+        {
+            string[] array = Clover_RefreshToken(clientid, refresh_token, Convert.ToInt32(StoreId), 0, 0);
+            if(array == null || array.Length == 0) { return; }
+            else
+            {
+                try
+                {
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    string Url = "https://api.syncgo.in/api/webhook/pos-config/access-token";
+                    RestClient client = new RestClient(Url);
+                    RestRequest request = new RestRequest(Method.POST);
+                    request.AddHeader("cache-control", "no-cache");
+                    request.AddHeader("content-type", "application/json");
+                    Syncgo_Refresh authdetails_Refresh = new Syncgo_Refresh();
+                    authdetails_Refresh.referenceId = StoreId;
+                    authdetails_Refresh.accessToken = array[0];
+                    string auth_json = JsonConvert.SerializeObject(authdetails_Refresh);
+                    request.AddParameter("application/json", auth_json, (ParameterType)4);
+                    IRestResponse response = client.Execute(request);
+                    string content = response.Content;
+                }
+                catch(Exception)
+                {
+
+                }
             }
         }
         public static void CreateCSVFromGenericList<T>(List<T> list, string csvNameWithExt, string storeid)
