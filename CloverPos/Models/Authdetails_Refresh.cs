@@ -11,4 +11,9 @@ namespace CloverPos.Models
         public string client_id { get; set; }
         public string refresh_token { get; set; }
     }
+    class Syncgo_Refresh
+    {
+        public string referenceId { get; set; }
+        public string accessToken { get; set; }
+    }
 }
