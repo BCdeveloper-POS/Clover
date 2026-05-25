@@ -209,7 +209,7 @@ namespace CloverPos
             request.AddHeader("Authorization", "Bearer " + accessToken);
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             IRestResponse response = client.Execute(request);
-        //  File.AppendAllText($"{StoreId}categories.json", response.Content); //comment later
+        // File.AppendAllText($"{StoreId}categories.json", response.Content); //comment later
             try
             {
                 if (!(response.StatusCode.ToString().ToUpper() == "UNAUTHORIZED"))
@@ -383,7 +383,8 @@ namespace CloverPos
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         IRestResponse response1 = client1.Execute(request1);
                         string content2 = response1.Content;
-                 //  File.AppendAllText($"{storeid}_items.json", content2); //comment later 
+                
+                        //File.AppendAllText($"{storeid}_items.json", content2); //comment later 
                         if (response1.StatusCode.ToString().ToUpper() != "OK")
                         {
                             if (!exception.Contains(storeid.ToString()))
