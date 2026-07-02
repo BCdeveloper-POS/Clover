@@ -18,7 +18,7 @@ namespace CloverPos
                 {
                     try
                     {
-                        //if (current.StoreSettings.StoreId == 13057)
+                        //if (current.StoreSettings.StoreId == 13168)
                         //{
                         //    Console.WriteLine("Fetching_storeid " + current.StoreSettings.StoreId);
                         //}
