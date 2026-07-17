@@ -339,7 +339,7 @@ namespace CloverPos
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 IRestResponse response = client.Execute(request);
 
-              // File.AppendAllText($"{storeid}tax_rates.json", response.Content); //comment later
+            //   File.AppendAllText($"{storeid}tax_rates.json", response.Content); //comment later
 
 
                 string content = response.Content;
@@ -384,7 +384,7 @@ namespace CloverPos
                         IRestResponse response1 = client1.Execute(request1);
                         string content2 = response1.Content;
                 
-              //   File.AppendAllText($"{storeid}_items.json", content2); //comment later 
+                // File.AppendAllText($"{storeid}_items.json", content2); //comment later 
                         if (response1.StatusCode.ToString().ToUpper() != "OK")
                         {
                             if (!exception.Contains(storeid.ToString()))
