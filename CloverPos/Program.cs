@@ -4,7 +4,6 @@ using System.Configuration;
 
 namespace CloverPos
 {
-
     class Program
     {
         private static void Main(string[] args)
@@ -19,14 +18,14 @@ namespace CloverPos
                     try
                     {
 
-                    //    if (current.StoreSettings.StoreId == 13331)
-                    //    {
-                    //        Console.WriteLine("Fetching_storeid " + current.StoreSettings.StoreId);
-                    //    }
-                    //    else
-                    //    {
-                    //        continue;
-                    //    }
+                        //if (current.StoreSettings.StoreId == 13289)
+                        //{
+                        //    Console.WriteLine("Fetching_storeid " + current.StoreSettings.StoreId);
+                        //}
+                        //else
+                        //{
+                        //    continue;
+                        //}
 
                         if (current.StoreSettings.POSSettings != null && current.StoreSettings.POSSettings.categories != null)
                         {
