@@ -17,8 +17,8 @@ namespace CloverPos
                 {
                     try
                     {
-
-                        //if (current.StoreSettings.StoreId == 13289)
+                        //negtopos 13293
+                        //if (current.StoreSettings.StoreId == 13293)
                         //{
                         //    Console.WriteLine("Fetching_storeid " + current.StoreSettings.StoreId);
                         //}
@@ -31,12 +31,12 @@ namespace CloverPos
                         {
                             if (current.Refresh_token != "")// && current.StoreSettings.StoreId == 10917
                             {
-                                clsCloverPos clsCloverPos = new clsCloverPos(current.StoreSettings.StoreId, current.StoreSettings.POSSettings.merchantId, current.StoreSettings.POSSettings.tokenid, current.StoreSettings.POSSettings.ClientId, current.StoreSettings.POSSettings.Code, current.StoreSettings.POSSettings.instock, current.StoreSettings.POSSettings.categories, current.Refresh_token);
+                                clsCloverPos clsCloverPos = new clsCloverPos(current.StoreSettings.StoreId, current.StoreSettings.POSSettings.merchantId, current.StoreSettings.POSSettings.tokenid, current.StoreSettings.POSSettings.ClientId, current.StoreSettings.POSSettings.Code, current.StoreSettings.POSSettings.instock, current.StoreSettings.POSSettings.categories, current.Refresh_token, current.config); // NEW - 2026-09-08 - pass DB Config
                                 Console.WriteLine();
                             }
                             else if (current.PosName.ToUpper() == "CLOVER" && current.Refresh_token == "")
                             {
-                                clsCloverPos clsCloverPos = new clsCloverPos(current.StoreSettings.StoreId, current.StoreSettings.POSSettings.merchantId, current.StoreSettings.POSSettings.tokenid, current.StoreSettings.POSSettings.ClientId, current.StoreSettings.POSSettings.Code, current.StoreSettings.POSSettings.instock, current.StoreSettings.POSSettings.categories);
+                                clsCloverPos clsCloverPos = new clsCloverPos(current.StoreSettings.StoreId, current.StoreSettings.POSSettings.merchantId, current.StoreSettings.POSSettings.tokenid, current.StoreSettings.POSSettings.ClientId, current.StoreSettings.POSSettings.Code, current.StoreSettings.POSSettings.instock, current.StoreSettings.POSSettings.categories, current.config); // NEW - 2026-09-08 - pass DB Config
                                 Console.WriteLine();
                             }
                         }

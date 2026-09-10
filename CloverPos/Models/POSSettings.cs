@@ -51,11 +51,25 @@ namespace CloverPos.Models
                         pobj.PosId = Convert.ToInt32(dr["PosId"]);
                         pobj.Refresh_token = dr["Refresh_token"].ToString();
                         pobj.StoreSettings = obj;
+
+                        // NEW - 2026-09-08 - Read DB Config column into config (StaticQty/IsNegativeToPostiveQty/Deposits/IsDepositByPack/InStockOnly)
+                        if (dr["Config"] != DBNull.Value && !string.IsNullOrWhiteSpace(dr["Config"].ToString()))
+                        {
+                            pobj.config = JsonConvert.DeserializeObject<Config>(dr["Config"].ToString());
+                        }
+
+                        if (pobj.config == null)
+                        {
+                            pobj.config = new Config();
+                        }
+
                         if (pobj.StoreSettings.POSSettings != null)
                         {
                             pobj.StoreSettings.POSSettings.categories = obj.POSSettings.categories;
                             pobj.StoreSettings.POSSettings.Upc = obj.POSSettings.Upc;
                         }
+
+
                         posdetails.Add(pobj);
                     }
                 }
@@ -77,7 +91,20 @@ namespace CloverPos.Models
         public string PosName { get; set; }
         public StoreSetting StoreSettings { get; set; }
         public string Setting { get; set; }
-       public string Refresh_token { get; set; }
+        public string Refresh_token { get; set; }
+        // NEW - 2026-09-08 - DB Config for this store
+        public Config config { get; set; }
+    }
+    // NEW - 2026-09-08 - DB Config model (values come from the DB Config tab)
+    public class Config
+    {
+        public int StaticQty { get; set; }
+        public bool IsNegativeToPostiveQty { get; set; }
+        public decimal Deposits { get; set; }
+        public bool IsDepositByPack { get; set; }
+        public bool InStockOnly { get; set; }
+        // NEW - 2026-09-08 - Round price up to .49/.99 when configured
+        public bool IsRoundUp { get; set; }
     }
     public class Setting
     {

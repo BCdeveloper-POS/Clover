@@ -45,9 +45,13 @@ namespace CloverPos
 
         StoreSetting ss = new StoreSetting();
         int storeId;
+        // NEW - 2026-09-08 - DB Config for the store being processed
+        Config config = new Config();
 
-        public clsCloverPos(int StoreId, string MerchantId, string TokenId, string ClientId, string Code, string InStock, List<categories> Category, string refreshtoken)
+        public clsCloverPos(int StoreId, string MerchantId, string TokenId, string ClientId, string Code, string InStock, List<categories> Category, string refreshtoken, Config config)
         {
+            // NEW - 2026-09-08 - Keep DB Config so GenerateCSVFiles can apply StaticQty/IsNegativeToPostiveQty/Deposits/IsDepositByPack/InStockOnly
+            this.config = config ?? new Config();
             Console.WriteLine("Generating Product File of Clover " + StoreId);
             string[] array = Clover_RefreshToken(ClientId, refreshtoken, StoreId, 0, 0);
             string value = CloverSettings(StoreId, MerchantId, ClientId, array[0], Code, InStock, Category, array[1] ?? "");
@@ -61,8 +65,10 @@ namespace CloverPos
             }
             storeId = StoreId;
         }
-        public clsCloverPos(int StoreId, string MerchantId, string TokenId, string ClientId, string Code, string InStock, List<categories> Category)
+        public clsCloverPos(int StoreId, string MerchantId, string TokenId, string ClientId, string Code, string InStock, List<categories> Category, Config config)
         {
+            // NEW - 2026-09-08 - Keep DB Config so GenerateCSVFiles can apply StaticQty/IsNegativeToPostiveQty/Deposits/IsDepositByPack/InStockOnly
+            this.config = config ?? new Config();
             Console.WriteLine("Generating Product File of Clover " + StoreId);
             string value = CloverSettings(StoreId, MerchantId, ClientId, TokenId, Code, InStock, Category);
             if (!string.IsNullOrEmpty(value))
@@ -214,7 +220,7 @@ namespace CloverPos
             request.AddHeader("Authorization", "Bearer " + accessToken);
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             IRestResponse response = client.Execute(request);
-           // File.AppendAllText($"{StoreId}categories.json", response.Content); //comment later
+            // File.AppendAllText($"{StoreId}categories.json", response.Content); //comment later
             try
             {
                 if (!(response.StatusCode.ToString().ToUpper() == "UNAUTHORIZED"))
@@ -344,7 +350,7 @@ namespace CloverPos
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 IRestResponse response = client.Execute(request);
 
-              //  File.AppendAllText($"{storeid}tax_rates.json", response.Content); //comment later
+                //  File.AppendAllText($"{storeid}tax_rates.json", response.Content); //comment later
 
 
                 string content = response.Content;
@@ -389,7 +395,7 @@ namespace CloverPos
                         IRestResponse response1 = client1.Execute(request1);
                         string content2 = response1.Content;
 
-                    //    File.AppendAllText($"{storeid}_items.json", content2); //comment later 
+                        //    File.AppendAllText($"{storeid}_items.json", content2); //comment later 
                         if (response1.StatusCode.ToString().ToUpper() != "OK")
                         {
                             if (!exception.Contains(storeid.ToString()))
@@ -528,6 +534,19 @@ namespace CloverPos
                                 exportProducts.qty = 100L;
                             }
                             exportProducts.qty = Convert.ToInt32(exportProducts.qty);
+
+                            // NEW - 2026-09-08 - Convert negative stock to positive when configured (DB Config); use original API qty (itemStock.stockCount) for the negative check
+                            if (config.IsNegativeToPostiveQty && element.itemStock != null && element.itemStock.stockCount < 0)
+                            {
+                                exportProducts.qty = Math.Abs(exportProducts.qty);
+                            }
+
+                            // NEW - 2026-09-08 - Static quantity override (DB Config); final qty override
+                            if (config.StaticQty > 0)
+                            {
+                                exportProducts.qty = config.StaticQty;
+                            }
+
                             exportProducts.price = 0m;
                             if (element.price != 0m && element.price != 0m)
                             {
@@ -838,6 +857,34 @@ namespace CloverPos
                             fn.country = "";
                             fn.region = "";
 
+                            // NEW - 2026-09-08 - DB-configured deposit override (final), applied after existing deposit logic using the already-established pack
+                            if (config.Deposits > 0)
+                            {
+                                exportProducts.deposit = config.Deposits;
+                                if (config.IsDepositByPack)
+                                {
+                                    exportProducts.deposit = config.Deposits * Convert.ToInt32(exportProducts.pack);
+                                }
+                            }
+                            // NEW - 2026-09-08 - Round price up to .49/.99 when configured (DB Config)
+                            if (config.IsRoundUp)
+                            {
+                                decimal price = exportProducts.price;
+                                if (price > 0)
+                                {
+                                    decimal whole = Math.Floor(price);
+                                    decimal cents = price - whole;
+                                    if (cents <= 0.49M)
+                                    {
+                                        exportProducts.price = whole + 0.49M;
+                                    }
+                                    else
+                                    {
+                                        exportProducts.price = whole + 0.99M;
+                                    }
+                                }
+                            }
+
                             //Debugging-1
                             /*  if (element.sku == "850079194038" || element.sku == "850018947992" || element.sku == "850079194014")
                              {
@@ -845,16 +892,25 @@ namespace CloverPos
                                      $"Adding: SKU={element.sku}, UPC={exportProducts.upc}, Category={exportProducts.CategoryId}");
                              }*/
 
+
+                            // NEW - 2026-09-08 - InStockOnly: skip out-of-stock items when configured (DB Config); runs against the final qty
+                            if (config.InStockOnly && exportProducts.qty <= 0)
+                            {
+                                continue;
+                            }
+
                             if ((upcnotnullstores.Contains(storeid.ToString()) || upcskucodeidnull.Contains(storeid.ToString())) && exportProducts.upc != "")
                             {
                                 Productlist.Add(exportProducts);
                                 fullNameList.Add(fn);
                             }
+
                             /* else if (exportProducts.CategoryId != "AKGXX4R4H9YP2" && element.code != null && element.code != "" && exportProducts.sku != "YWBMNBHY8J63E" && exportProducts.sku != "BSX0WDE4S26GR")
                              {
                                  Productlist.Add(exportProducts);
                                  fullNameList.Add(fn);
                              }*/
+
                             else if (exportProducts.CategoryId != "AKGXX4R4H9YP2" && exportProducts.sku != "YWBMNBHY8J63E" && exportProducts.sku != "BSX0WDE4S26GR")
                             {
                                 Productlist.Add(exportProducts);
