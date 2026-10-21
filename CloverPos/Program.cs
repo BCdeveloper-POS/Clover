@@ -17,8 +17,8 @@ namespace CloverPos
                 {
                     try
                     {
-                        //negtopos 13293
-                        //if ( current.StoreSettings.StoreId == 13032 )
+
+                        //if (current.StoreSettings.StoreId == 13068)
                         //{
                         //    Console.WriteLine("Fetching_storeid " + current.StoreSettings.StoreId);
                         //}
